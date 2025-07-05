@@ -1,0 +1,135 @@
+{% extends "core/base.html" %}
+{% load myfilters %}
+
+{% block title %}Ajouter des notes{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto p-6 bg-white rounded shadow space-y-6">
+
+  <h1 class="text-2xl font-bold mb-4">➕ Ajouter les notes</h1>
+
+  <form method="post" class="space-y-6">
+    {% csrf_token %}
+
+    <!-- Filtrage : Matière -->
+    <div>
+      <label for="matiere" class="block font-semibold mb-1">Matière</label>
+      <select name="matiere" id="matiere" class="w-full border rounded px-3 py-2" required>
+        <option value="">-- Sélectionnez une matière --</option>
+        {% for m in matieres %}
+          <option value="{{ m.id }}" {% if m.id|stringformat:"s" == request.POST.matiere %}selected{% endif %}>{{ m.nom }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Filtrage : Classe -->
+    <div>
+      <label for="classe" class="block font-semibold mb-1">Classe</label>
+      <select name="classe" id="id_classe" class="w-full border rounded px-3 py-2" required>
+        <option value="">-- Sélectionnez une classe --</option>
+        {% for c in classes %}
+          <option value="{{ c.id }}" {% if c.id|stringformat:"s" == request.POST.classe %}selected{% endif %}>{{ c.nom }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Filtrage : Année -->
+    <div>
+      <label for="annee" class="block font-semibold mb-1">Année Scolaire</label>
+      <select name="annee" id="id_annee" class="w-full border rounded px-3 py-2" required>
+        <option value="">-- Sélectionnez une année --</option>
+        {% for a in annees %}
+          <option value="{{ a.id }}" {% if a.id|stringformat:"s" == request.POST.annee %}selected{% endif %}>{{ a.nom }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Étudiant (sera filtré côté client ou par rechargement) -->
+    <div>
+      <label for="etudiant" class="block font-semibold mb-1">Étudiant</label>
+      <select name="etudiant" id="id_etudiant" class="w-full border rounded px-3 py-2" required>
+        <option value="">-- Sélectionnez un étudiant --</option>
+        {% comment %}
+          Pour filtrer les étudiants selon classe/année, il faut soit JS, soit recharger la page.
+          Ici on met tous les étudiants possibles (à adapter).
+        {% endcomment %}
+        {% for etu in etudiants %}
+          <option value="{{ etu.utilisateur.id }}" {% if etu.utilisateur.id|stringformat:"s" == request.POST.etudiant %}selected{% endif %}>{{ etu.utilisateur.get_full_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Contrôles Continus -->
+    <div>
+      <h2 class="font-semibold text-lg mb-2">Contrôles Continus</h2>
+      {% for i in cc_indices %}
+        <div class="grid grid-cols-4 gap-4 mb-4 items-center">
+          <label class="font-medium">CC{{ i }}</label>
+          <input oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="Note" type="text" name="cc{{ i }}" id="cc{{ i }}" class="border rounded px-3 py-2" value="{{ request.POST|get_item:'cc'|add:i|stringformat:'s' }}">
+          <textarea placeholder="Commentaire" name="commentaire_cc{{ i }}" id="commentaire_cc{{ i }}" rows="1" class="border rounded px-3 py-2 resize-none">{{ request.POST|get_item:'commentaire_cc'|add:i|stringformat:'s' }}</textarea>
+          <input type="date" name="date_cc{{ i }}" id="date_cc{{ i }}" class="border rounded px-3 py-2" value="{{ request.POST|get_item:'date_cc'|add:i|stringformat:'s' }}">
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Examen -->
+    <div>
+      <div class="grid grid-cols-4 gap-4 items-center">
+        <label class="font-medium">Examen</label>
+        <input oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="Note" type="text" name="note_exam" id="note_exam" class="border rounded px-3 py-2" value="{{ request.POST.note_exam|default:'' }}">
+        <textarea placeholder="Commentaire" name="commentaire_exam" id="commentaire_exam" rows="1" class="border rounded px-3 py-2 resize-none">{{ request.POST.commentaire_exam|default:'' }}</textarea>
+        <input type="date" name="date_exam" id="date_exam" class="border rounded px-3 py-2" value="{{ request.POST.date_exam|default:'' }}">
+      </div>
+    </div>
+
+    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+      Enregistrer
+    </button>
+
+  </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const classeSelect = document.getElementById('id_classe');
+        const anneeSelect = document.getElementById('id_annee');
+        const etudiantSelect = document.getElementById('id_etudiant');
+
+        async function chargerEtudiants() {
+            const classeId = classeSelect.value;
+            const anneeId = anneeSelect.value;
+
+            etudiantSelect.innerHTML = '<option value="">Chargement...</option>';
+
+            if (!classeId || !anneeId) {
+                etudiantSelect.innerHTML = '<option value="">-- Sélectionnez un étudiant --</option>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/ajax/etudiants/?classe_id=${classeId}&annee_id=${anneeId}`);
+                if (!response.ok) throw new Error('Erreur réseau');
+                const data = await response.json();
+
+                etudiantSelect.innerHTML = '<option value="">-- Sélectionnez un étudiant --</option>';
+                data.etudiants.forEach(e => {
+                    const option = document.createElement('option');
+                    option.value = e.id;
+                    option.textContent = e.nom;
+                    etudiantSelect.appendChild(option);
+                });
+            } catch (e) {
+                etudiantSelect.innerHTML = '<option value="">Erreur lors du chargement</option>';
+                console.error(e);
+            }
+        }
+
+        classeSelect.addEventListener('change', chargerEtudiants);
+        anneeSelect.addEventListener('change', chargerEtudiants);
+
+        if (classeSelect.value && anneeSelect.value) {
+            chargerEtudiants();
+        }
+    });
+</script>
+{% endblock %}

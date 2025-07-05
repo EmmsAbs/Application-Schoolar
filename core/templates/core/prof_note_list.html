@@ -1,0 +1,155 @@
+{% extends "core/base.html" %}
+
+{% block title %}Note etudiants{% endblock %}
+
+{% block header_title %}Professeur {{ user.get_full_name }}{% endblock %}
+
+{% block content %}
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">📊 Tableau des Notes - Professeur</h1>
+
+        <!-- Filtres -->
+        <form method="get" class="bg-white p-4 rounded-lg shadow mb-6 flex flex-wrap gap-8">
+            <div class="flex flex-col">
+                <label class="text-sm font-semibold mb-1">Matière</label>
+                <select name="matiere" class="border rounded px-4 py-2">
+                    <option value=""> </option>
+                    {% for m in matieres %}
+                        <option value="{{ m.id }}" {% if m.id|stringformat:"s" == matiere_id %}selected{% endif %}>{{ m.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-sm font-semibold mb-1">Classe</label>
+                <select name="classe" class="border rounded px-3 py-2">
+                    <option value=""> </option>
+                    {% for c in classes %}
+                        <option value="{{ c.id }}" {% if c.id|stringformat:"s" == classe_id %}selected{% endif %}>{{ c.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-sm font-semibold mb-1">Année Scolaire</label>
+                <select name="annee" class="border rounded px-3 py-2">
+                    <option value=""> </option>
+                    {% for a in annees %}
+                        <option value="{{ a.id }}" {% if a.id|stringformat:"s" == annee_id %}selected{% endif %}>{{ a.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex flex-col flex-grow min-w-[200px]">
+                <label for="recherche" class="text-sm font-semibold mb-1">Rechercher Étudiant</label>
+                <input 
+                    type="text" 
+                    name="recherche" 
+                    id="recherche" 
+                    value="{{ recherche }}" 
+                    placeholder="Nom ou prénom" 
+                    class="border rounded px-4 py-2 w-full"
+                >
+            </div>
+
+            <div class="flex items-end">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    Filtrer
+                </button>
+                <a href="{% url 'prof_note_list' %}" class="ml-3 bg-red-400 text-white px-4 py-2 rounded hover:bg-gray-400">
+                    Réinitialiser
+                </a>
+            </div>
+        </form>
+
+        <div class="flex justify-between items-center mb-4">
+            <!-- Texte à gauche -->
+            <div class="text-gray-500 font-medium text-xs">
+                *CC = Controle Continue
+            </div>
+
+            <!-- Actions à droite -->
+            <div class="flex items-center gap-8">
+                <a href="?{{ request.GET.urlencode }}&export=csv" class="text-blue-600 hover:underline text-sm">
+                    ⬇️ Télécharger (CSV)
+                </a>
+
+                <a href="{% url 'add_note' %}" class="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded shadow">
+                    ➕ Ajouter des notes
+                </a>
+            </div>
+        </div>
+        <!-- <div class="flex justify-end gap-8 mb-4">
+            <a href="?{{ request.GET.urlencode }}&export=csv" class="text-blue-600 hover:underline text-sm">
+                ⬇️ Télécharger (CSV)
+            </a>
+
+            Bouton Ajouter des notes 
+            <a href="{% url 'add_note' %}" class="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded shadow">
+                ➕ Ajouter des notes
+            </a>
+        </div> -->
+
+        {% if notes_finales %}
+        <!-- Tableau des notes -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white shadow rounded-lg overflow-hidden">
+                <thead class="bg-blue-600 text-white text-sm uppercase text-left">
+                    <tr>
+                        <th class="px-4 py-3">Étudiant</th>
+                        <th class="px-4 py-3">Classe</th>
+                        <th class="px-4 py-3">CC1</th>
+                        <th class="px-4 py-3">CC2</th>
+                        <th class="px-4 py-3">CC3</th>
+                        <th class="px-4 py-3">CC4</th>
+                        <th class="px-4 py-3">Examen</th>
+                        <th class="px-4 py-3">Moyenne</th>
+                        <th class="px-4 py-3">Actions</th>
+                        
+                    </tr>
+                </thead>
+                <tbody class="text-gray-700 divide-y divide-gray-200">
+                    {% for note in notes_finales %}
+                    <tr class="hover:bg-gray-100">
+                        <td class="px-4 py-2 font-medium">{{ note.etudiant }}</td>
+                        <td class="px-4 py-2">{{ note.classe }}</td>
+
+                        {% for cc in note.cc_notes %}
+                            <td class="px-4 py-2 text-center">
+                                {% if cc %}
+                                    {{cc.note }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+
+                        <td class="px-4 py-2 text-center">
+                            {% if note.exam_note %}
+                                {{ note.exam_note.note }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2 font-bold text-center">
+                            {% if note.moyenne %}
+                                {{ note.moyenne }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2 text-center">
+                            <a href="{% url 'edit_note' note.inscription.id note.matiere.id %}" 
+                                 class="text-indigo-600 hover:underline font-medium text-sm"> ✏️
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="mt-6 text-gray-600 italic">Veuillez sélectionner une matière, une classe et une année pour afficher les résultats.</p>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends "core/base.html" %}
+
+{% block title %}Notes Etudiant{% endblock %}
+
+{% block header_title %} Étudiant {{ user.get_full_name }} {% endblock %}
+
+{% block content %}
+    <div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">📘 Mes Résultats Académiques</h1>
+
+    <!-- Filtres -->
+    <form method="get" class="bg-white p-4 rounded-lg shadow mb-6 flex flex-wrap gap-8">
+        <div class="flex flex-col">
+            <label class="text-sm font-semibold mb-1">Matière</label>
+            <select name="matiere" class="border rounded px-4 py-2">
+                <option value=""> </option>
+                {% for m in matieres %}
+                    <option value="{{ m.id }}" {% if m.id|stringformat:"s" == matiere_id %}selected{% endif %}>
+                        {{ m.nom }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="flex flex-col">
+            <label class="text-sm font-semibold mb-1">Classe</label>
+            <select name="classe" class="border rounded px-3 py-2">
+                <option value=""> </option>
+                {% for c in classes %}
+                    <option value="{{ c.id }}" {% if c.id|stringformat:"s" == classe_id %}selected{% endif %}>
+                        {{ c.nom }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="flex flex-col">
+            <label class="text-sm font-semibold mb-1">Année Scolaire</label>
+            <select name="annee" class="border rounded px-3 py-2">
+                <option value=""> </option>
+                {% for a in annees %}
+                    <option value="{{ a.id }}" {% if a.id|stringformat:"s" == annee_id %}selected{% endif %}>
+                        {{ a.nom }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="flex items-end">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Filtrer
+            </button>
+            <a href="{% url 'notes_etudiant' %}" class="ml-3 bg-red-400 text-white px-4 py-2 rounded hover:bg-gray-400">
+                Réinitialiser
+            </a>
+        </div>
+    </form>
+
+    {% if notes_finales %}
+    <div class="flex justify-between items-center mb-4">
+        <div class="text-gray-500 font-medium text-xs">
+            *CC = Contrôle Continu
+        </div>
+    </div>
+
+    <!-- Tableau des notes -->
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white shadow rounded-lg overflow-hidden">
+            <thead class="bg-blue-600 text-white text-sm uppercase text-left">
+                <tr>
+                    <th class="px-4 py-3">Matiere</th>
+                    <th class="px-4 py-3">CC1</th>
+                    <th class="px-4 py-3">CC2</th>
+                    <th class="px-4 py-3">CC3</th>
+                    <th class="px-4 py-3">CC4</th>
+                    <th class="px-4 py-3">Examen</th>
+                    <th class="px-4 py-3">Moyenne</th>
+                </tr>
+            </thead>
+            <tbody class="text-gray-700 divide-y divide-gray-200">
+                {% for note in notes_finales %}
+                <tr class="hover:bg-gray-100">
+                    <td class="px-4 py-2 font-medium">{{ note.matiere.nom }}</td>
+
+                    {% for cc in note.cc_notes %}
+                        <td class="px-4 py-2 text-center">
+                            {% if cc %}
+                                {{ cc.note }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+
+                    <td class="px-4 py-2 text-center">
+                        {% if note.exam_note %}
+                            {{ note.exam_note.note }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <td class="px-4 py-2 font-bold text-center">
+                        {% if note.moyenne %}
+                            {{ note.moyenne }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="mt-6 text-gray-600 italic">Veuillez sélectionner une matière, une classe et une année pour afficher vos résultats.</p>
+    {% endif %}
+</div>
+{% endblock %}

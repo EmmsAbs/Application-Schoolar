@@ -1,0 +1,10 @@
+{% extends "core/base.html" %}
+
+{% block title %}Tableau de bord Prof{% endblock %}
+
+{% block header_title %}Professeur {{ user.get_full_name }}{% endblock %}
+
+{% block content %}
+    <h2 class="text-xl font-bold mb-4">Contenu du tableau de bord professeur</h2>
+    <p>Bienvenue {{ user.first_name }}.</p>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "core/base.html" %}
+
+{% block title %}Tableau de bord Etudiant{% endblock %}
+
+{% block header_title %} Étudiant{% endblock %}
+
+{% block content %}
+    <div class="bg-white p-6 rounded shadow">
+        <h1 class="text-2xl font-bold mb-4">Bienvenue {{ user.get_full_name }} (Étudiant)</h1>
+        <p class="text-gray-700">Ceci est votre tableau de bord.</p>
+    </div>
+{% endblock %}
+

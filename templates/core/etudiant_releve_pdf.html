@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Bulletin de notes</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #333; padding: 8px; text-align: center; }
+        th { background-color: #4a90e2; color: white; }
+        .footer { margin-top: 30px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Bulletin de Notes</h1>
+    <p><strong>Étudiant :</strong> {{ etudiant }}</p>
+    <p><strong>Année scolaire :</strong> {{ annee }}</p>
+    <p><strong>Classe :</strong> {{ classe }}</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Matière</th>
+                <th>Moyenne</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in liste_moyennes %}
+            <tr>
+                <td>{{ item.matiere }}</td>
+                <td>{{ item.moyenne }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td><strong>Moyenne Générale</strong></td>
+                <td><strong>{{ moyenne_generale }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

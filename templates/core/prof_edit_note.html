@@ -1,0 +1,156 @@
+{% extends "core/base.html" %}
+{% load filters %}
+
+{% block title %}Modifier les notes{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+  <h1 class="text-2xl font-bold mb-4 text-center">📝 Modifier les notes de</h1>
+
+  <p class="mb-4 text-gray-700">
+    Étudiant : <strong>{{ inscription.etudiant.utilisateur.get_full_name }}</strong><br>
+    Classe : <strong>{{ inscription.classe.nom }}</strong><br>
+    Année : <strong>{{ inscription.annee.nom }}</strong><br>
+    Matière : <strong>{{ matiere.nom }}</strong>
+  </p>
+
+  <form method="post">
+    {% csrf_token %}
+    <!-- Contrôles Continus -->
+    {% for cc_type in cc_types %}
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">{{ cc_type.nom }}</h2>
+            {% for i in "1234" %}
+                {% with notes=notes_par_type|get_item:cc_type.id %}
+                    {% if notes|length >= forloop.counter %}
+                    {% with note=notes|index:forloop.counter0 %}
+                        <div class="flex flex-wrap items-end gap-4 mb-4">
+                            <div class="flex flex-col">
+                                <label for="cc{{ cc_type.id }}_{{ forloop.counter }}" class="font-medium">CC {{ forloop.counter }}</label>
+                                <input
+                                    type="text"
+                                    name="cc{{ cc_type.id }}_{{ forloop.counter }}"
+                                    id="cc{{ cc_type.id }}_{{ forloop.counter }}"
+                                    placeholder="Note"
+                                    value="{{ note.note|default_if_none:'' }}"
+                                    oninput="this.value = this.value.replace(/[^0-9.]/g, '')"
+                                    class="border rounded px-4 py-2 w-28"
+                                >
+                            </div>
+
+                            <div class="flex flex-col">
+                                <input
+                                    type="date"
+                                    name="date_cc{{ cc_type.id }}_{{ forloop.counter }}"
+                                    id="date_cc{{ cc_type.id }}_{{ forloop.counter }}"
+                                    value="{{ note.date_eval|date:'Y-m-d' }}"
+                                    class="border rounded px-4 py-2 w-44"
+                                >
+                            </div>
+
+                            <div class="flex flex-col flex-grow">
+                                <input
+                                    type="text"
+                                    name="commentaire_cc{{ cc_type.id }}_{{ forloop.counter }}"
+                                    id="commentaire_cc{{ cc_type.id }}_{{ forloop.counter }}"
+                                    value="{{ note.commentaire|default_if_none:'' }}"
+                                    class="border rounded px-4 py-2 w-full"
+                                    placeholder="Commentaire"
+                                >
+                            </div>
+                        </div>
+                    {% endwith %}
+                    {% else %}
+                        <div class="flex flex-wrap items-end gap-4 mb-4">
+                            <div class="flex flex-col">
+                                <label for="cc{{ cc_type.id }}_{{ forloop.counter }}" class="font-medium">CC {{ forloop.counter }}</label>
+                                <input
+                                    type="text"
+                                    name="cc{{ cc_type.id }}_{{ forloop.counter }}"
+                                    id="cc{{ cc_type.id }}_{{ forloop.counter }}"
+                                    placeholder="Note"
+                                    class="border rounded px-4 py-2 w-28"
+                                    oninput="this.value = this.value.replace(/[^0-9.]/g, '')"
+                                >
+                            </div>
+
+                            <div class="flex flex-col">
+                                <input
+                                    type="date"
+                                    name="date_cc{{ cc_type.id }}_{{ forloop.counter }}"
+                                    id="date_cc{{ cc_type.id }}_{{ forloop.counter }}"
+                                    class="border rounded px-4 py-2 w-44"
+                                >
+                            </div>
+
+                            <div class="flex flex-col flex-grow">
+                                <input
+                                    type="text"
+                                    name="commentaire_cc{{ cc_type.id }}_{{ forloop.counter }}"
+                                    id="commentaire_cc{{ cc_type.id }}_{{ forloop.counter }}"
+                                    class="border rounded px-4 py-2 w-full"
+                                    placeholder="Commentaire"
+                                >
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            {% endfor %}
+
+
+
+        </div>
+    {% endfor %}
+
+    {% if exam_type %}
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold mb-4">{{ exam_type.nom }}</h2>
+
+        {% with note=notes_par_type|get_item:exam_type.id|first %}
+        <div class="flex flex-wrap items-end gap-4 mb-4">
+            <div class="flex flex-col">
+            <input
+                type="text"
+                name="note_exam"
+                id="note_exam"
+                placeholder="Note"
+                value="{{ note.note|default:'' }}"
+                oninput="this.value = this.value.replace(/[^0-9.]/g, '')"
+                class="border rounded px-4 py-2 w-28"
+            >
+            </div>
+
+            <div class="flex flex-col">
+            <input
+                type="date"
+                name="date_exam"
+                id="date_exam"
+                value="{{ note.date_eval|date:'Y-m-d' }}"
+                class="border rounded px-4 py-2 w-44"
+            >
+            </div>
+
+            <div class="flex flex-col flex-grow">
+            <input
+                type="text"
+                name="commentaire_exam"
+                id="commentaire_exam"
+                value="{{ note.commentaire|default:'' }}"
+                class="border rounded px-4 py-2 w-full"
+                placeholder="Commentaire"
+            >
+            </div>
+        </div>
+        {% endwith %}
+    </div>
+    {% endif %}
+   
+    <div class="mt-6">
+      <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded">
+        Enregistrer
+      </button>
+      <a href="{% url 'prof_note_list' %}" class="ml-4 text-red-600 hover:underline">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

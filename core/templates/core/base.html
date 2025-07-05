@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <link href="{% static 'css/dist/styles.css' %}" rel="stylesheet"> 
+
+    
+</head>
+<body class="h-screen flex">
+
+    <!-- Sidebar vertical -->
+    <aside class="w-64 bg-gradient-to-b from-indigo-800 to-purple-700 text-white shadow-lg h-screen hidden md:block">
+        <!-- Header -->
+        <div class="p-6 text-2xl font-extrabold border-b border-indigo-500">
+            <span class="text-white">Schoolar</span>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="p-4 space-y-2">
+            {% if request.user.is_authenticated %}
+                {% if request.user.is_etudiant %}
+                    <a href="{% url 'notes_etudiant' %}"
+                    class="block py-2 px-4 rounded-lg transition duration-200 {% if request.resolver_match.url_name == 'notes_etudiant' %}bg-white text-indigo-700 font-semibold{% else %}hover:bg-indigo-500 hover:text-white{% endif %}">
+                        🎓 Notes
+                    </a>
+                    <a href="{% url 'bulletins_etudiant' %}"
+                    class="block py-2 px-4 rounded-lg transition duration-200 {% if request.resolver_match.url_name == 'notes_etudiant' %}bg-white text-indigo-700 font-semibold{% else %}hover:bg-indigo-500 hover:text-white{% endif %}">
+                        📚 Relévés de notes
+                    </a>
+                {% endif %}
+                {% if request.user.is_prof %}
+                    <a href="{% url 'prof_note_list' %}"
+                    class="block py-2 px-4 rounded-lg transition duration-200 {% if request.resolver_match.url_name == 'prof_note_list' %}bg-white text-indigo-700 font-semibold{% else %}hover:bg-indigo-500 hover:text-white{% endif %}">
+                        👨‍🏫 Notes
+                    </a>
+                {% endif %}
+            {% endif %}
+        </nav>
+    </aside>
+
+
+    <!-- Contenu principal -->
+    <div class="flex-1 flex flex-col">
+        <!-- Barre horizontale -->
+        <header class="bg-white shadow p-4 flex justify-between items-center">
+            <div class="text-xl font-semibold">{% block header_title %}Bienvenue{% endblock %}</div>
+            <a href="{% url 'logout' %}" class="text-red-600 hover:underline">Déconnexion</a>
+        </header>
+
+        <!-- Contenu dynamique -->
+        <main class="flex-1 p-6 overflow-y-auto">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    
+
+</body>
+</html>

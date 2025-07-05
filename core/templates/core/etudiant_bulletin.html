@@ -1,0 +1,75 @@
+{% extends "core/base.html" %}
+
+{% block title %}Mes Relévés{% endblock %}
+
+{% block header_title %}Étudiant {{ user.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">📚 Mes Relévés de Notes </h1>
+
+    <!-- Filtres -->
+    <form method="get" class="bg-white p-4 rounded-lg shadow mb-6 flex flex-wrap gap-8 items-end">
+        <div class="flex flex-col">
+            <label for="annee" class="text-sm font-semibold mb-1">Année scolaire</label>
+            <select name="annee" id="annee" class="border rounded px-3 py-2">
+                <option value="">-- Sélectionner --</option>
+                {% for a in annees %}
+                    <option value="{{ a.id }}" {% if a.id == annee_id %}selected{% endif %}>{{ a.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="flex flex-col">
+            <label for="classe" class="text-sm font-semibold mb-1">Classe</label>
+            <select name="classe" id="classe" class="border rounded px-3 py-2">
+                <option value="">-- Sélectionner --</option>
+                {% for c in classes %}
+                    <option value="{{ c.id }}" {% if c.id == classe_id %}selected{% endif %}>{{ c.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Filtrer</button>
+            <a href="{% url 'bulletins_etudiant' %}" class="ml-3 bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">Réinitialiser</a>
+        </div>
+    </form>
+    {% if annee_id and classe_id %}
+        <div class="flex justify-end mb-4">
+            <a href="{% url 'releves_pdf' annee_id classe_id %}" 
+            class="text-blue-600 hover:underline text-sm">
+                ⬇️ Télécharger le relévé (PDF)
+            </a>
+        </div>
+    {% endif %}
+    
+    {% if liste_moyennes %}
+    <!-- Tableau des moyennes par matière -->
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white shadow rounded-lg overflow-hidden">
+            <thead class="bg-blue-600 text-white text-sm uppercase text-left">
+                <tr>
+                    <th class="px-4 py-3">Matière</th>
+                    <th class="px-4 py-3 text-center">Moyenne</th>
+                </tr>
+            </thead>
+            <tbody class="text-gray-700 divide-y divide-gray-200">
+                {% for item in liste_moyennes %}
+                <tr class="hover:bg-gray-100">
+                    <td class="px-4 py-2">{{ item.matiere }}</td>
+                    <td class="px-4 py-2 font-bold text-center">{{ item.moyenne }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="font-bold bg-gray-100">
+                    <td class="px-4 py-2">Moyenne Générale</td>
+                    <td class="px-4 py-2 text-center">{{ moyenne_generale }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="mt-6 text-gray-600 italic">Aucune note disponible pour les filtres sélectionnés.</p>
+    {% endif %}
+</div>
+{% endblock %}
